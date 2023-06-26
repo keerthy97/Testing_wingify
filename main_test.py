@@ -1,42 +1,68 @@
-url = "https://sakshingp.github.io/assignment/login.html"
+import pytest
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-driver.get(url)
+class TestLogin:
+    @classmethod
+    def setup_class(cls):
+        cls.driver = webdriver.Chrome(ChromeDriverManager().install())
+        cls.wait = WebDriverWait(cls.driver, 10)
+        cls.url = "https://sakshingp.github.io/assignment/login.html"
 
-# Wait for the username input field to be visible
-username_input = WebDriverWait(driver, 10).until(
-    EC.visibility_of_element_located((By.CLASS_NAME, "form-control"))
-)
+    @classmethod
+    def teardown_class(cls):
+        cls.driver.quit()
 
-# Enter the username
-username_input.send_keys(username)
+    def test_login(self):
+        username = "keerthi"
+        password = "12345"
 
-password_input = driver.find_element_by_id("password")
-password_input.send_keys(password)
+        self.driver.get(self.url)
 
-login_button = driver.find_element_by_id("log-in")
-login_button.click()
+        username_input = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "form-control")))
+        username_input.send_keys(username)
 
-print("Logged in successfully")
+        password_input = self.driver.find_element_by_id("password")
+        password_input.send_keys(password)
 
-# Wait for the amount header to be clickable
-amount_header = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.ID, "amount"))
-)
+        login_button = self.driver.find_element_by_id("log-in")
+        login_button.click()
 
-# Click on the amount header to sort the table
-amount_header.click()
+        assert "Logged in" in self.driver.page_source, "Login failed"
 
-# Get the list of amounts from the transaction table
-amounts = driver.find_elements_by_xpath("//table[@id='transaction-table']//tr[position() > 1]/td[5]")
-amounts_text = [amount.text for amount in amounts]
+class TestHomePage:
+    @classmethod
+    def setup_class(cls):
+        cls.driver = webdriver.Chrome(ChromeDriverManager().install())
+        cls.wait = WebDriverWait(cls.driver, 10)
+        cls.url = "https://sakshingp.github.io/assignment/login.html"
 
-# Check if the amounts are sorted in ascending order
-sorted_amounts = sorted(amounts_text)
-assert amounts_text == sorted_amounts, "Amounts in the transaction table are not sorted"
+        cls.driver.get(cls.url)
 
-print("Amounts in the transaction table are sorted")
+        username_input = cls.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "form-control")))
+        username_input.send_keys("keerthi")
+        password_input = cls.driver.find_element_by_id("password")
+        password_input.send_keys("12345")
+        login_button = cls.driver.find_element_by_id("log-in")
+        login_button.click()
 
+        cls.wait.until(EC.visibility_of_element_located((By.ID, "amount")))
 
-time.sleep(4)
-# Close the browser
-driver.quit()
+    @classmethod
+    def teardown_class(cls):
+        cls.driver.quit()
+
+    def test_sort_amounts(self):
+        amount_header = self.driver.find_element_by_id("amount")
+        amount_header.click()
+
+        amounts = self.driver.find_elements_by_xpath("//table[@id='transaction-table']//tr[position() > 1]/td[5]")
+        amounts_text = [amount.text for amount in amounts]
+
+        assert amounts_text == sorted(amounts_text), "Amounts in the transaction table are not sorted"
+
+if __name__ == "__main__":
+    pytest.main(["-v", "--html=report1.html"])
