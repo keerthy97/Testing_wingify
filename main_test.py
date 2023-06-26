@@ -65,4 +65,4 @@ class TestHomePage:
         assert amounts_text == sorted(amounts_text), "Amounts in the transaction table are not sorted"
 
 if __name__ == "__main__":
-    pytest.main(["-v", "--html=report1.html"])
+    pytest.main(["-v", "--html=report.html"])
